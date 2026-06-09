@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>World Cup Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <section>
+        <div id="leaderboard"></div>
+    </section>
+    <section>
+        <h2>📊 Pick Distribution</h2>
+        <canvas id="chart"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </section>
+    <section>
+        <h2>💀 Eliminated Players</h2>
+        <div id="eliminatedPlayers"></div>
+    </section>
+    <section>
+        <h2>🔥 Team Heatmap</h2>
+        <div id="heatmap"></div>
+    </section>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="app.js">
+    if (player.stage === "Eliminated") {
+        row.style.opacity = 0.3
+    }
+  </script>
+
+</body>
+</html>
