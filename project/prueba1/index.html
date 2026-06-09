@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Power BI Style Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>🏆 Tournament Dashboard</h1>
+
+<!-- KPI CARDS -->
+<div class="kpis">
+  <div class="kpi" id="kpiAlive"></div>
+  <div class="kpi" id="kpiEliminated"></div>
+  <div class="kpi" id="kpiTop"></div>
+  <div class="kpi" id="kpiRisk"></div>
+</div>
+
+<!-- LEADERBOARD -->
+<section>
+  <h2>Leaderboard</h2>
+  <div id="leaderboard"></div>
+</section>
+
+<!-- PICKS DISTRIBUTION -->
+<section>
+  <h2>📊 Picks Distribution</h2>
+  <canvas id="chart"></canvas>
+</section>
+
+<!-- HEATMAP -->
+<section>
+  <h2>🔥 Team Popularity</h2>
+  <div id="heatmap"></div>
+</section>
+
+<script src="app.js"></script>
+
+</body>
+</html>

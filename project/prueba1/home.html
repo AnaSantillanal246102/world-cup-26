@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>World Cup Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial;
+      background: #0b0f1a;
+      color: white;
+    }
+
+    .container {
+      width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 { color: #ffc107; }
+
+    /* KPI */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .kpi {
+      background: #1c2233;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .kpi b {
+      font-size: 28px;
+      display: block;
+    }
+
+    /* GRID SECTIONS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #1c2233;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    /* LEADERBOARD */
+    .row {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      background: #111827;
+    }
+
+    .bar {
+      height: 6px;
+      background: #333;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    .fill {
+      height: 6px;
+      background: #0078d4;
+      border-radius: 5px;
+    }
+
+    .alive { color: #00e676; }
+    .risk { color: #ffc107; }
+    .out { color: #ff5252; }
+
+    /* HEATMAP */
+    #heatmap {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    #heatmap div {
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+    }
+
+    /* MATCHES */
+    .match {
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      background: #111827;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>🏆 World Cup Dashboard</h1>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi" id="kpiAlive"></div>
+    <div class="kpi" id="kpiEliminated"></div>
+    <div class="kpi" id="kpiTop"></div>
+    <div class="kpi" id="kpiRisk"></div>
+  </div>
+
+  <!-- LEADERBOARD + CHART -->
+  <div class="grid-2">
+
+    <div class="card">
+      <h2>🏆 Leaderboard</h2>
+      <div id="leaderboard"></div>
+    </div>
+
+    <div class="card">
+      <h2>📊 Picks</h2>
+      <canvas id="chart"></canvas>
+    </div>
+
+  </div>
+
+  <!-- HEATMAP + INSIGHTS -->
+  <div class="grid-2">
+
+    <div class="card">
+      <h2>🔥 Heatmap</h2>
+      <div id="heatmap"></div>
+    </div>
+
+    <div class="card" id="insights">
+      <h2>⚠️ Insights</h2>
+    </div>
+
+  </div>
+
+  <!-- MATCHES -->
+  <div class="card">
+    <h2>🏆 Knockout Matches</h2>
+    <div id="matches"></div>
+  </div>
+
+</div>
+
+<script>
+
+const supabaseUrl = "https://cqeuabsqjftuagcbiyzq.supabase.co"
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxZXVhYnNxamZ0dWFnY2JpeXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5OTg1MDUsImV4cCI6MjA5NjU3NDUwNX0.Od_DYEycWd-7nnTJX3FGPgPJz1y-YhBxVr7hz1yZfII"
+
+const client = supabase.createClient(supabaseUrl, supabaseKey)
+
+// STATUS
+function getStatus(champ, runner) {
+  if (!champ.is_eliminated && !runner.is_eliminated) return "alive"
+  if (!champ.is_eliminated || !runner.is_eliminated) return "risk"
+  return "out"
+}
+
+// LOAD DATA
+async function load() {
+
+  const { data: predictions } = await client.from("predictions").select("*")
+  const { data: teams } = await client.from("teams").select("*")
+
+  if (!predictions || !teams) return
+
+  const players = predictions.map(p => {
+    const champ = teams.find(t => t.name === p.champion)
+    const runner = teams.find(t => t.name === p.runnerup)
+
+    const status = getStatus(champ, runner)
+
+    let points = 0
+    if (!champ.is_eliminated) points += 3
+    if (!runner.is_eliminated) points += 1
+
+    return { ...p, points, status }
+  })
+
+  players.sort((a,b)=>b.points-a.points)
+
+  renderLeaderboard(players)
+  renderKPIs(players)
+  renderHeatmap(players)
+  renderChart(players)
+  renderMatches(teams)
+}
+
+// LEADERBOARD
+function renderLeaderboard(players) {
+  const container = document.getElementById("leaderboard")
+  container.innerHTML = ""
+
+  const max = Math.max(...players.map(p => p.points))
+
+  players.forEach((p, i) => {
+    const row = document.createElement("div")
+    const width = max ? (p.points/max)*100 : 0
+
+    row.className = "row"
+    row.innerHTML = `
+      <strong>#${i+1} ${p.name}</strong> (${p.points} pts)
+      <div>${p.champion} | ${p.runnerup}</div>
+      <div class="${p.status}">${p.status}</div>
+      <div class="bar"><div class="fill" style="width:${width}%"></div></div>
+    `
+
+    container.appendChild(row)
+  })
+}
+
+// KPIs
+function renderKPIs(players) {
+  const alive = players.filter(p=>p.status==="alive").length
+  const out = players.filter(p=>p.status==="out").length
+
+  const counts = {}
+  players.forEach(p=>{
+    counts[p.champion] = (counts[p.champion]||0)+1
+  })
+
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+  const top = sorted.length>0 ? sorted[0][0] : "N/A"
+
+  document.getElementById("kpiAlive").innerHTML =
+    `<b>${Math.round(alive/players.length*100)}%</b>Alive`
+
+  document.getElementById("kpiEliminated").innerHTML =
+    `<b>${out}</b>Eliminated`
+
+  document.getElementById("kpiTop").innerHTML =
+    `<b>${top}</b>Top Pick`
+
+  document.getElementById("kpiRisk").innerHTML =
+    `<b>${Math.round(out/players.length*100)}%</b>Risk`
+}
+
+// CHART
+function renderChart(players) {
+  const counts = {}
+  players.forEach(p=>counts[p.champion]=(counts[p.champion]||0)+1)
+
+  new Chart(document.getElementById("chart"), {
+    type: "bar",
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        data: Object.values(counts),
+        backgroundColor: "#0078d4"
+      }]
+    }
+  })
+}
+
+// HEATMAP
+function renderHeatmap(players) {
+  const counts = {}
+  players.forEach(p=>counts[p.champion]=(counts[p.champion]||0)+1)
+
+  const max = Math.max(...Object.values(counts))
+  const container = document.getElementById("heatmap")
+  container.innerHTML = ""
+
+  Object.entries(counts).forEach(([team,val])=>{
+    const div = document.createElement("div")
+    div.style.background = `rgba(0,120,212,${val/max})`
+    div.innerHTML = team
+    container.appendChild(div)
+  })
+}
+
+// MATCHES
+function renderMatches(teams) {
+  const alive = teams.filter(t=>!t.is_eliminated)
+  const container = document.getElementById("matches")
+  container.innerHTML=""
+
+  for(let i=0;i<alive.length;i+=2){
+    if(!alive[i+1]) break
+
+    const m = document.createElement("div")
+    m.className="match"
+    m.innerHTML = `${alive[i].name} vs ${alive[i+1].name}`
+
+    container.appendChild(m)
+  }
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", load)
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+body {
+  font-family: "Segoe UI", Arial;
+  background: #f4f6f9;
+  padding: 20px;
+}
+
+h1 {
+  color: #222;
+}
+
+/* KPI CARDS */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.kpi {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 22px;
+}
+
+/* LEADERBOARD */
+.row {
+  background: white;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.bar {
+  height: 8px;
+  background: #ddd;
+  border-radius: 5px;
+}
+
+.fill {
+  height: 8px;
+  background: #0078d4;
+  border-radius: 5px;
+}
+
+/* STATUS */
+.alive { color: green; }
+.risk { color: orange; }
+.out { color: red; }
+
+/* HEATMAP */
+#heatmap {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+#heatmap div {
+  padding: 10px;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+}

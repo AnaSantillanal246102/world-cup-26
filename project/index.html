@@ -1,30 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
   <title>World Cup Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-  <h1>🏆 World Cup Predictions</h1>
+<h1>🏆 World Cup Leaderboard</h1>
 
-  <section>
-    <h2>🟢 Still in Play</h2>
-    <div id="active" class="grid"></div>
-  </section>
+<!-- LEADERBOARD -->
+<section>
+  <h2>Leaderboard</h2>
+  <div id="leaderboard"></div>
+</section>
 
-  <section>
-    <h2>🔴 Eliminated</h2>
-    <div id="eliminated" class="grid"></div>
-  </section>
+<!-- INSIGHTS -->
+<section class="cards">
+  <div class="card" id="probability"></div>
+  <div class="card" id="topTeams"></div>
+  <div class="card" id="risk"></div>
+  <div class="card" id="eliminatedCount"></div>
+</section>
 
-  <section>
-    <h2>🏆 Bracket</h2>
-    <div id="bracket"></div>
-  </section>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="app.js"></script>
+<!-- CHART -->
+<section>
+  <h2>📊 Picks Distribution</h2>
+  <canvas id="chart"></canvas>
+</section>
+
+<!-- HEATMAP -->
+<section>
+  <h2>🔥 Team Heatmap</h2>
+  <div id="heatmap"></div>
+</section>
+
+<!-- MATCHES -->
+<section>
+  <h2>🏆 Knockout Matches</h2>
+  <div id="matches"></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
