@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mundial 2026 — Concurso de predicciones</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #ffffff;
+      --bg2:        #f7f6f2;
+      --bg3:        #f1f0ec;
+      --text:       #1a1a18;
+      --text2:      #6b6a64;
+      --text3:      #9c9a92;
+      --border:     rgba(0,0,0,0.10);
+      --border2:    rgba(0,0,0,0.18);
+      --green-bg:   #e1f5ee;
+      --green-text: #0f6e56;
+      --red-bg:     #fcebeb;
+      --red-text:   #a32d2d;
+      --amber-bg:   #faeeda;
+      --amber-text: #854f0b;
+      --blue-bg:    #e6f1fb;
+      --blue-text:  #185fa5;
+      --radius-md:  8px;
+      --radius-lg:  12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:         #1c1c1a;
+        --bg2:        #242422;
+        --bg3:        #2c2c2a;
+        --text:       #e8e6de;
+        --text2:      #9c9a92;
+        --text3:      #6b6a64;
+        --border:     rgba(255,255,255,0.10);
+        --border2:    rgba(255,255,255,0.18);
+        --green-bg:   #085041;
+        --green-text: #9fe1cb;
+        --red-bg:     #501313;
+        --red-text:   #f09595;
+        --amber-bg:   #633806;
+        --amber-text: #fac775;
+        --blue-bg:    #0c447c;
+        --blue-text:  #b5d4f4;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    /* ── Header ── */
+    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 12px; }
+    .header h1 { font-size: 22px; font-weight: 500; }
+    .header p  { font-size: 13px; color: var(--text2); margin-top: 3px; }
+    .badge-live {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; background: var(--green-bg); color: var(--green-text);
+      padding: 4px 12px; border-radius: 20px; font-weight: 500;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-text); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Stats ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 2rem; }
+    @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; }
+    .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+    .stat-value { font-size: 26px; font-weight: 500; line-height: 1; }
+    .stat-sub   { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--border2); margin-bottom: 1.5rem; }
+    .tab {
+      font-size: 13px; padding: 8px 18px; cursor: pointer;
+      border-bottom: 2px solid transparent; color: var(--text2);
+      margin-bottom: -1px; transition: color .15s;
+      background: none; border-top: none; border-left: none; border-right: none;
+    }
+    .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Leaderboard ── */
+    .lb-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .lb-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 160px 160px 70px;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 0.5px solid var(--border);
+      gap: 8px;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-head { background: var(--bg2); font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+    @media (max-width: 640px) {
+      .lb-row { grid-template-columns: 32px 1fr 70px; }
+      .lb-row .lb-pred { display: none; }
+    }
+    .lb-rank { font-size: 15px; font-weight: 500; color: var(--text3); text-align: center; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--blue-bg); color: var(--blue-text);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500; flex-shrink: 0;
+    }
+    .lb-name  { font-size: 13px; font-weight: 500; }
+    .lb-area  { font-size: 11px; color: var(--text3); }
+    .pred-pill {
+      font-size: 11px; padding: 3px 9px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 4px;
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .alive  { background: var(--green-bg); color: var(--green-text); }
+    .dead   { background: var(--bg2); color: var(--text3); text-decoration: line-through; opacity: .7; }
+    .winner { background: var(--amber-bg); color: var(--amber-text); }
+    .pts    { font-size: 16px; font-weight: 500; text-align: right; }
+    .pts-note { font-size: 11px; color: var(--text3); margin-top: 10px; }
+
+    /* ── Equipos / globos ── */
+    .equipos-section { display: flex; flex-direction: column; gap: 10px; }
+    .equipo-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      transition: opacity .2s;
+    }
+    .equipo-card.eliminado { opacity: .55; }
+    .equipo-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .flag-big { font-size: 26px; line-height: 1; }
+    .equipo-nombre { font-size: 15px; font-weight: 500; }
+    .equipo-grupo  { font-size: 12px; color: var(--text3); }
+    .elim-badge {
+      margin-left: auto; font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: var(--red-bg); color: var(--red-text); font-weight: 500;
+    }
+    .vivo-badge {
+      margin-left: auto; font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: var(--green-bg); color: var(--green-text); font-weight: 500;
+    }
+    .avatars-section { display: flex; flex-direction: column; gap: 8px; }
+    .avatars-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+    .avatars-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .avatar-bubble {
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      cursor: default;
+    }
+    .avatar-bubble .av {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 500;
+      border: 1.5px solid var(--border2);
+    }
+    .av-alive { background: var(--green-bg); color: var(--green-text); }
+    .av-dead  { background: var(--red-bg);   color: var(--red-text);   opacity: .7; }
+    .av-name  { font-size: 10px; color: var(--text3); text-align: center; max-width: 40px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .no-picks { font-size: 12px; color: var(--text3); font-style: italic; }
+
+    /* ── Picks bars ── */
+    .bar-section { margin-bottom: 1.5rem; }
+    .bar-section-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; font-weight: 500; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bar-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; height: 10px; background: var(--bg3); border-radius: 5px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 5px; background: var(--blue-bg); border: 0.5px solid var(--border); transition: width .4s; }
+    .bar-fill.elim-bar { background: var(--red-bg); opacity: .7; }
+    .bar-count { font-size: 11px; color: var(--text3); width: 20px; text-align: right; }
+
+    /* ── Loading/Error ── */
+    .loading { text-align: center; padding: 3rem; color: var(--text3); font-size: 14px; }
+    .error-msg { background: var(--red-bg); color: var(--red-text); border-radius: var(--radius-md); padding: 12px 16px; font-size: 13px; margin-bottom: 1rem; }
+
+    /* ── Filters ── */
+    .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-btn {
+      font-size: 12px; padding: 5px 14px; border-radius: 20px;
+      border: 0.5px solid var(--border2); background: var(--bg);
+      color: var(--text2); cursor: pointer; transition: all .15s;
+    }
+    .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── CONFIGURACIÓN ─────────────────────────────────────────────────────── -->
+  <!-- Reemplaza estos valores con los de tu proyecto Supabase -->
+  <script>
+    const SUPABASE_URL  = 'https://TU_PROJECT_ID.supabase.co';
+    const SUPABASE_ANON = 'TU_ANON_PUBLIC_KEY';
+  </script>
+
+  <div id="error-banner" class="error-msg" style="display:none"></div>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+  <div class="header">
+    <div>
+      <h1>Mundial 2026 — Concurso de predicciones</h1>
+      <p id="subtitle">Cargando datos…</p>
+    </div>
+    <span class="badge-live"><span class="dot"></span><span id="fase-label">En vivo</span></span>
+  </div>
+
+  <!-- ── STATS ──────────────────────────────────────────────────────────────── -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Participantes</div>
+      <div class="stat-value" id="s-total">—</div>
+      <div class="stat-sub">registrados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Equipos eliminados</div>
+      <div class="stat-value" id="s-elim">—</div>
+      <div class="stat-sub" id="s-elim-sub">de — selecciones</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Predicciones vivas</div>
+      <div class="stat-value" id="s-vivos">—</div>
+      <div class="stat-sub">campeón aún activo</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Líder actual</div>
+      <div class="stat-value" id="s-pts-lider">—</div>
+      <div class="stat-sub" id="s-lider">—</div>
+    </div>
+  </div>
+
+  <!-- ── TABS ───────────────────────────────────────────────────────────────── -->
+  <div class="tabs">
+    <button class="tab active" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab" data-tab="equipos">Equipos</button>
+    <button class="tab" data-tab="picks">Análisis de picks</button>
+  </div>
+
+  <!-- ── TAB: LEADERBOARD ───────────────────────────────────────────────────── -->
+  <div id="tab-leaderboard">
+    <div class="lb-card">
+      <div class="lb-row lb-head">
+        <div></div>
+        <div>Participante</div>
+        <div class="lb-pred">Campeón</div>
+        <div class="lb-pred">Subcampeón</div>
+        <div style="text-align:right">Pts</div>
+      </div>
+      <div id="lb-body"><div class="loading">Cargando…</div></div>
+    </div>
+    <p class="pts-note" style="margin-top:10px">
+      Puntuación: 3 pts campeón correcto · 1 pt subcampeón correcto · 0 pts si el equipo fue eliminado
+    </p>
+  </div>
+
+  <!-- ── TAB: EQUIPOS ───────────────────────────────────────────────────────── -->
+  <div id="tab-equipos" style="display:none">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="todos">Todos</button>
+      <button class="filter-btn" data-filter="vivos">Aún en torneo</button>
+      <button class="filter-btn" data-filter="eliminados">Eliminados</button>
+    </div>
+    <div class="equipos-section" id="equipos-list"><div class="loading">Cargando…</div></div>
+  </div>
+
+  <!-- ── TAB: PICKS ─────────────────────────────────────────────────────────── -->
+  <div id="tab-picks" style="display:none">
+    <div class="bar-section">
+      <div class="bar-section-title">Picks de campeón más populares</div>
+      <div id="bars-campeon"><div class="loading">Cargando…</div></div>
+    </div>
+    <div class="bar-section">
+      <div class="bar-section-title">Picks de subcampeón más populares</div>
+      <div id="bars-sub"><div class="loading">Cargando…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ─── Estado global ────────────────────────────────────────────────────────────
+let state = {
+  leaderboard: [],
+  equipos: [],
+  tournament: null,
+  equipoFilter: 'todos',
+};
+
+// ─── Utilidades ───────────────────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function rondaLabel(n) {
+  return ['', 'Fase de grupos', 'Octavos de final', 'Cuartos de final', 'Semifinal'][n] || `Ronda ${n}`;
+}
+
+// ─── Fetch inicial ────────────────────────────────────────────────────────────
+async function fetchAll() {
+  const [{ data: lb, error: lbErr }, { data: eq, error: eqErr }, { data: tr }] = await Promise.all([
+    db.from('v_leaderboard').select('*'),
+    db.from('v_picks_por_seleccion').select('*'),
+    db.from('tournament_results').select('*').limit(1).single(),
+  ]);
+
+  if (lbErr) { showError('Error cargando leaderboard: ' + lbErr.message); return; }
+  if (eqErr) { showError('Error cargando equipos: ' + eqErr.message); return; }
+
+  state.leaderboard = lb ?? [];
+  state.equipos     = eq ?? [];
+  state.tournament  = tr ?? null;
+
+  renderAll();
+}
+
+// ─── Render principal ─────────────────────────────────────────────────────────
+function renderAll() {
+  renderStats();
+  renderLeaderboard();
+  renderEquipos();
+  renderPicks();
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const { leaderboard, equipos } = state;
+  const total = leaderboard.length;
+  const elimCount = equipos.filter(e => e.eliminada).length;
+  const vivos = leaderboard.filter(r => !r.campeon_eliminado).length;
+  const pctVivos = total > 0 ? Math.round((vivos / total) * 100) : 0;
+  const lider = leaderboard[0];
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-elim').textContent = elimCount;
+  document.getElementById('s-elim-sub').textContent = `de ${equipos.length} selecciones`;
+  document.getElementById('s-vivos').textContent = pctVivos + '%';
+  document.getElementById('s-pts-lider').textContent = lider ? lider.puntos + ' pts' : '—';
+  document.getElementById('s-lider').textContent = lider?.nombre ?? '—';
+  document.getElementById('subtitle').textContent =
+    `${total} participante${total !== 1 ? 's' : ''} · ${elimCount} equipo${elimCount !== 1 ? 's' : ''} eliminado${elimCount !== 1 ? 's' : ''}`;
+}
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+function renderLeaderboard() {
+  const rows = state.leaderboard;
+  if (!rows.length) {
+    document.getElementById('lb-body').innerHTML = '<div class="loading">Sin participantes aún.</div>';
+    return;
+  }
+
+  const finalizado = state.tournament?.finalizado;
+  const html = rows.map((r, i) => {
+    const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+    const cClass = finalizado && r.puntos >= 3 ? 'winner' : r.campeon_eliminado ? 'dead' : 'alive';
+    const sClass = finalizado && r.puntos >= 1 && r.subcampeon === state.tournament?.subcampeon
+      ? 'winner' : r.subcampeon_eliminado ? 'dead' : 'alive';
+
+    return `
+      <div class="lb-row">
+        <div class="lb-rank">${rank}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar">${r.iniciales}</div>
+          <div>
+            <div class="lb-name">${r.nombre}</div>
+            <div class="lb-area">${r.area ?? ''}</div>
+          </div>
+        </div>
+        <div class="lb-pred">
+          <span class="pred-pill ${cClass}">
+            ${r.campeon_flag ?? ''} ${r.campeon}
+          </span>
+        </div>
+        <div class="lb-pred">
+          <span class="pred-pill ${sClass}">
+            ${r.subcampeon_flag ?? ''} ${r.subcampeon}
+          </span>
+        </div>
+        <div class="pts">${r.puntos}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('lb-body').innerHTML = html;
+}
+
+// ─── Tab Equipos con globos ───────────────────────────────────────────────────
+function renderEquipos() {
+  const { equipos, leaderboard } = state;
+  const filter = state.equipoFilter;
+
+  // Construir mapa: equipo → participantes que lo pusieron como subcampeón también
+  // (la vista v_picks_por_seleccion ya trae participantes_campeon)
+  // Añadimos también sub-picks desde el leaderboard
+  const subPicksMap = {};
+  leaderboard.forEach(r => {
+    if (!subPicksMap[r.subcampeon]) subPicksMap[r.subcampeon] = [];
+    subPicksMap[r.subcampeon].push({ nombre: r.nombre, iniciales: r.iniciales, campeonElim: r.campeon_eliminado });
+  });
+
+  let lista = [...equipos];
+  if (filter === 'vivos')    lista = lista.filter(e => !e.eliminada);
+  if (filter === 'eliminados') lista = lista.filter(e => e.eliminada);
+
+  if (!lista.length) {
+    document.getElementById('equipos-list').innerHTML = '<div class="loading">Sin equipos en esta categoría.</div>';
+    return;
+  }
+
+  const html = lista.map(eq => {
+    const picks = eq.participantes_campeon ?? [];
+    const subPicks = subPicksMap[eq.nombre] ?? [];
+
+    // Globos de campeón: separar vivos (campeón no eliminado aún) y eliminados
+    // Un participante "sigue en juego" si su campeón (= este equipo) no está eliminado
+    const picksBubbles = picks.map(p => {
+      // El equipo está eliminado → todos los que lo pusieron como campeón están out
+      const isDead = eq.eliminada;
+      return `
+        <div class="avatar-bubble" title="${p.nombre} · ${p.area ?? ''}">
+          <div class="av ${isDead ? 'av-dead' : 'av-alive'}">${p.iniciales}</div>
+          <div class="av-name">${p.nombre.split(' ')[0]}</div>
+        </div>`;
+    }).join('');
+
+    const subBubbles = subPicks.map(p => {
+      const isDead = eq.eliminada;
+      return `
+        <div class="avatar-bubble" title="${p.nombre} (subcampeón)">
+          <div class="av ${isDead ? 'av-dead' : 'av-alive'}" style="border-style:dashed">${p.iniciales}</div>
+          <div class="av-name">${p.nombre.split(' ')[0]}</div>
+        </div>`;
+    }).join('');
+
+    const badgeHtml = eq.eliminada
+      ? `<span class="elim-badge">Eliminado · ${rondaLabel(eq.ronda_eliminacion)}</span>`
+      : `<span class="vivo-badge">En torneo</span>`;
+
+    return `
+      <div class="equipo-card ${eq.eliminada ? 'eliminado' : ''}">
+        <div class="equipo-header">
+          <span class="flag-big">${eq.bandera_emoji ?? ''}</span>
+          <div>
+            <div class="equipo-nombre">${eq.nombre}</div>
+            <div class="equipo-grupo">Grupo ${eq.grupo ?? '—'}</div>
+          </div>
+          ${badgeHtml}
+        </div>
+        <div class="avatars-section">
+          <div>
+            <div class="avatars-label">Lo pusieron de campeón (${picks.length})</div>
+            <div class="avatars-row">
+              ${picksBubbles || '<span class="no-picks">Nadie apostó por este equipo</span>'}
+            </div>
+          </div>
+          ${subPicks.length > 0 ? `
+          <div>
+            <div class="avatars-label">Lo pusieron de subcampeón (${subPicks.length})</div>
+            <div class="avatars-row">${subBubbles}</div>
+          </div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('equipos-list').innerHTML = html;
+}
+
+// ─── Picks / barras ───────────────────────────────────────────────────────────
+function renderPicks() {
+  const { equipos, leaderboard } = state;
+
+  // Contar desde leaderboard
+  const campCounts = {}, subCounts = {};
+  leaderboard.forEach(r => {
+    campCounts[r.campeon] = (campCounts[r.campeon] || 0) + 1;
+    subCounts[r.subcampeon] = (subCounts[r.subcampeon] || 0) + 1;
+  });
+
+  function buildBars(counts) {
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = sorted[0]?.[1] ?? 1;
+    return sorted.map(([nombre, cnt]) => {
+      const eq = equipos.find(e => e.nombre === nombre);
+      const pct = Math.round((cnt / max) * 100);
+      return `
+        <div class="bar-row">
+          <div class="bar-label">${eq?.bandera_emoji ?? ''} ${nombre}</div>
+          <div class="bar-track">
+            <div class="bar-fill ${eq?.eliminada ? 'elim-bar' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="bar-count">${cnt}</div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('bars-campeon').innerHTML = buildBars(campCounts) || '<div class="loading">Sin datos.</div>';
+  document.getElementById('bars-sub').innerHTML     = buildBars(subCounts)  || '<div class="loading">Sin datos.</div>';
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    ['leaderboard', 'equipos', 'picks'].forEach(id => {
+      document.getElementById('tab-' + id).style.display = id === btn.dataset.tab ? 'block' : 'none';
+    });
+  });
+});
+
+// ─── Filtros de equipos ───────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.equipoFilter = btn.dataset.filter;
+    renderEquipos();
+  });
+});
+
+// ─── Realtime: escuchar cambios en tiempo real ────────────────────────────────
+function setupRealtime() {
+  db.channel('mundial-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'participants' },    fetchAll)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions' },     fetchAll)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'selecciones' },     fetchAll)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_results' }, fetchAll)
+    .subscribe();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+fetchAll();
+setupRealtime();
+</script>
+</body>
+</html>
