@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mundial 2026 — Concurso de Predicciones</title>
+<title>World Cup 2026 — Predictions Contest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -99,7 +99,7 @@ body{
 }
 .hstat-v{font-family:var(--ff-head);font-size:24px;font-weight:600;color:var(--white);line-height:1;}
 .hstat-l{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;text-transform:uppercase;letter-spacing:.05em;}
-
+.hero-button{margin-top:10px; padding:0 1.5rem; display:flex;justify-content:flex-end; height:32px;}
 /* ═══════════════════════════════════════════════════
    MAIN LAYOUT
 ═══════════════════════════════════════════════════ */
@@ -389,7 +389,6 @@ body{
 <script>
 const SUPABASE_URL  = 'https://cqeuabsqjftuagcbiyzq.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxZXVhYnNxamZ0dWFnY2JpeXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5OTg1MDUsImV4cCI6MjA5NjU3NDUwNX0.Od_DYEycWd-7nnTJX3FGPgPJz1y-YhBxVr7hz1yZfII';
-  
 </script>
 
 <!-- ══════════════════════ HERO ══════════════════════ -->
@@ -397,18 +396,23 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
   <div class="hero-inner">
     <div class="hero-top">
       <div>
-        <div class="hero-title">MUNDIAL <span>2026</span></div>
-        <div class="hero-title" style="font-size:clamp(14px,2.5vw,20px);font-weight:500;color:rgba(255,255,255,.8)">Concurso de Predicciones</div>
-        <div class="hero-sub" id="hero-sub">Cargando datos…</div>
+        <div class="hero-title">WORLD CUP <span>2026</span></div>
+        <div class="hero-title" style="font-size:clamp(14px,2.5vw,20px);font-weight:500;color:rgba(255,255,255,.8)">Predictions Contest</div>
+        <div class="hero-sub" id="hero-sub">Loading data…</div>
       </div>
-      <span class="live-pill"><span class="live-dot"></span>En vivo</span>
+      <span class="live-pill"><span class="live-dot"></span>Live</span>
     </div>
+    
     <div class="hero-stats">
-      <div class="hstat"><div class="hstat-v" id="hs-total">—</div><div class="hstat-l">Participantes</div></div>
-      <div class="hstat"><div class="hstat-v" id="hs-elim">—</div><div class="hstat-l">Eliminados</div></div>
-      <div class="hstat"><div class="hstat-v" id="hs-alive">—</div><div class="hstat-l">En competencia</div></div>
-      <div class="hstat"><div class="hstat-v" id="hs-leader">—</div><div class="hstat-l">Líder actual</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-total">—</div><div class="hstat-l">Participants</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-elim">—</div><div class="hstat-l">Eliminated</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-alive">—</div><div class="hstat-l">Still in</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-leader">—</div><div class="hstat-l">Current leader</div></div>
+    
     </div>
+    <div class="hero-button">
+        <button class="live-pill" style="background:var(--white);color:var(--pitch);border-color:rgba(255,255,255,.3);font-weight:600;" onclick="window.location.href='https://tally.so/r/b5zG9g'">Make a Prediction</button>
+      </div>
   </div>
 </div>
 
@@ -418,7 +422,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
   <!-- Tabs -->
   <div class="tabs-bar">
     <button class="tab-btn active" data-tab="leaderboard">🏆 Leaderboard</button>
-    <button class="tab-btn" data-tab="teams">⚽ Selecciones</button>
+    <button class="tab-btn" data-tab="teams">⚽ Teams</button>
     <button class="tab-btn" data-tab="insights">📊 Insights</button>
     <button class="tab-btn" data-tab="bracket">🗺 Bracket</button>
   </div>
@@ -430,34 +434,34 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
         <thead>
           <tr>
             <th style="text-align:center">#</th>
-            <th>Participante</th>
-            <th class="col-hide">Campeón</th>
-            <th class="col-hide">Subcampeón</th>
-            <th>Estado</th>
+            <th>Participant</th>
+            <th class="col-hide">Champion</th>
+            <th class="col-hide">Runner-up</th>
+            <th>Status</th>
             <th>Pts</th>
           </tr>
         </thead>
         <tbody id="lb-body">
-          <tr><td colspan="6"><div class="loading-state"><div class="spinner"></div>Cargando…</div></td></tr>
+          <tr><td colspan="6"><div class="loading-state"><div class="spinner"></div>Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="pts-hint">Puntuación: <strong>3 pts</strong> si tu campeón es correcto · <strong>1 pt</strong> si tu subcampeón es correcto · <strong>0 pts</strong> si el equipo fue eliminado</p>
+    <p class="pts-hint">Scoring: <strong>3 pts</strong> if your champion is correct · <strong>1 pt</strong> if your runner-up is correct · <strong>0 pts</strong> if the team was eliminated</p>
   </div>
 
   <!-- ── TAB: SELECCIONES ── -->
   <div class="tab-panel" id="tab-teams">
-    <div class="loading-state" id="teams-loading"><div class="spinner"></div>Cargando…</div>
+    <div class="loading-state" id="teams-loading"><div class="spinner"></div>Loading…</div>
     <div id="teams-active-grid" class="teams-grid" style="display:none"></div>
     <div id="teams-elim-section" style="display:none">
-      <div class="section-divider"><span>Selecciones eliminadas</span></div>
+      <div class="section-divider"><span>Eliminated teams</span></div>
       <div id="teams-elim-grid" class="teams-grid"></div>
     </div>
   </div>
 
   <!-- ── TAB: INSIGHTS ── -->
   <div class="tab-panel" id="tab-insights">
-    <div class="loading-state" id="insights-loading"><div class="spinner"></div>Calculando…</div>
+    <div class="loading-state" id="insights-loading"><div class="spinner"></div>Calculating…</div>
     <div id="insights-content" style="display:none">
       <div class="insights-grid" id="insights-grid"></div>
     </div>
@@ -466,16 +470,16 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
   <!-- ── TAB: BRACKET ── -->
   <div class="tab-panel" id="tab-bracket">
     <div class="bracket-wrap">
-      <div class="bracket-title">⚽ Bracket — Desde Cuartos de Final</div>
+      <div class="bracket-title">⚽ Bracket — From Quarterfinals</div>
       <div class="bracket-grid" id="bracket-grid">
-        <div class="loading-state"><div class="spinner"></div>Cargando bracket…</div>
+        <div class="loading-state"><div class="spinner"></div>Loading bracket…</div>
       </div>
     </div>
   </div>
 
 </div><!-- /main -->
 
-<!-- ══════════════════════ LÓGICA ══════════════════════ -->
+<!-- ══════════════════════ LOGIC ══════════════════════ -->
 <script>
 /* ─── Supabase client ─────────────────────────────────────── */
 const { createClient } = supabase;
@@ -552,7 +556,7 @@ async function fetchAll(){
   const [{ data: lb }, { data: teams }, { data: bracket }] = await Promise.all([
     db.from('leaderboard').select('*').order('points', {ascending:false}),
     db.from('teams').select('*').order('name'),
-    db.from('bracket_matches').select('*').order('id'),   // opcional, ver abajo
+    db.from('bracket_matches').select('*').order('id'),   // optional, see below
   ]);
 
   state.leaderboard = lb ?? [];
@@ -614,7 +618,7 @@ function renderHero(teamsMap){
   document.getElementById('hs-alive').textContent  = activeCount;
   document.getElementById('hs-leader').textContent = leader ? `${leader.points}pts` : '—';
   document.getElementById('hero-sub').textContent  =
-    `${total} participantes · ${state.teams.filter(t=>t.is_eliminated).length} equipos eliminados`;
+    `${total} participants · ${state.teams.filter(t=>t.is_eliminated).length} eliminated teams`;
 }
 
 /* ─── LEADERBOARD ─────────────────────────────────────────── */
@@ -622,7 +626,7 @@ function renderLeaderboard(teamsMap){
   const lb = state.leaderboard;
   if(!lb.length){
     document.getElementById('lb-body').innerHTML =
-      '<tr><td colspan="6"><div class="loading-state">Sin participantes registrados aún.</div></td></tr>';
+      '<tr><td colspan="6"><div class="loading-state">No participants registered yet.</div></td></tr>';
     return;
   }
 
@@ -640,9 +644,9 @@ function renderLeaderboard(teamsMap){
     if(!isOut) rank++;
 
     const statusBadge = {
-      active: '<span class="status-badge sb-active">En competencia</span>',
-      risk:   '<span class="status-badge sb-risk">En riesgo</span>',
-      out:    '<span class="status-badge sb-out">Eliminado</span>',
+      active: '<span class="status-badge sb-active">Still in</span>',
+      risk:   '<span class="status-badge sb-risk">At risk</span>',
+      out:    '<span class="status-badge sb-out">Eliminated</span>',
     }[st];
 
     const campPill = `<span class="pick-pill ${ce?'pill-dead':'pill-ok'}">${flag(r.champion)} ${r.champion}</span>`;
@@ -666,7 +670,7 @@ function renderLeaderboard(teamsMap){
 
   let html = active.map(rowHtml).join('');
   if(out.length){
-    html += `<tr class="lb-divider"><td colspan="6">Participantes eliminados · ${out.length}</td></tr>`;
+    html += `<tr class="lb-divider"><td colspan="6">Eliminated participants · ${out.length}</td></tr>`;
     html += out.map(rowHtml).join('');
   }
 
@@ -708,7 +712,7 @@ function renderTeams(teamsMap){
             <div class="vav-name">${v.name.split(' ')[0]}</div>
           </div>`;
         }).join('')
-      : '<span class="no-votes">Sin votos</span>';
+      : '<span class="no-votes">No votes</span>';
 
     const statusEl = disabled
       ? '<span class="team-status ts-out">Eliminada</span>'
@@ -719,11 +723,11 @@ function renderTeams(teamsMap){
         <span class="flag">${flag(t.name)}</span>
         <div class="team-info">
           <div class="team-name">${t.name}</div>
-          <div class="team-sub">${voters.length} voto${voters.length!==1?'s':''} de campeón</div>
+          <div class="team-sub">${voters.length} vote${voters.length!==1?'s':''} for champion</div>
         </div>
         ${statusEl}
       </div>
-      <div class="voters-label">Apostaron por esta selección</div>
+      <div class="voters-label">Picked this team as champion</div>
       <div class="voters-bubbles">${bubbles}</div>
     </div>`;
   }
@@ -744,7 +748,7 @@ function renderInsights(teamsMap){
   const lb      = state.leaderboard;
   const teams   = state.teams;
   const total   = lb.length;
-  if(!total){ document.getElementById('insights-loading').innerHTML='<div class="loading-state">Sin datos.</div>'; return; }
+  if(!total){ document.getElementById('insights-loading').innerHTML='<div class="loading-state">No data.</div>'; return; }
 
   /* ── 1. % por selección ── */
   const campCount = {};
@@ -760,7 +764,7 @@ function renderInsights(teamsMap){
     </div>`;
   }).join('');
 
-  /* ── 2. Top selecciones favoritas ── */
+  /* ── 2. Top favorite picks ── */
   const top1 = topByPct[0];
   const topBars = topByPct.slice(0,4).map(([name,cnt])=>`
     <div class="mini-bar-row">
@@ -774,7 +778,7 @@ function renderInsights(teamsMap){
   const aliveRisk   = lb.filter(r=>participantStatus(r,teamsMap)==='risk').length;
   const pctWin      = total>0 ? Math.round(stillAlive/total*100) : 0;
 
-  /* ── 4. Riesgo del torneo (% en riesgo o eliminado) ── */
+  /* ── 4. Tournament risk (% at risk or eliminated) ── */
   const riskCount   = lb.filter(r=>participantStatus(r,teamsMap)!=='active').length;
   const riskPct     = total>0 ? Math.round(riskCount/total*100) : 0;
   const riskNeedle  = riskPct;
@@ -795,44 +799,44 @@ function renderInsights(teamsMap){
 
   const cards = [
     {
-      accent:'accent-gold', icon:'🌍', title:'% de participantes por selección',
-      main: `${topByPct[0]?.[1]||0}`, sub:`de ${total} apostaron por ${topByPct[0]?.[0]||'—'}`,
+      accent:'accent-gold', icon:'🌍', title:'% of participants per team',
+      main: `${topByPct[0]?.[1]||0}`, sub:`of ${total} picked ${topByPct[0]?.[0]||'—'}`,
       detail: pctBars,
     },
     {
-      accent:'accent-green', icon:'⭐', title:'Top selecciones favoritas',
-      main: `${top1?.[0]||'—'}`, sub:`el favorito con ${top1?.[1]||0} votos`,
+      accent:'accent-green', icon:'⭐', title:'Top favorite picks',
+      main: `${top1?.[0]||'—'}`, sub:`the favorite with ${top1?.[1]||0} votes`,
       detail: topBars,
     },
     {
-      accent:'accent-blue', icon:'🎯', title:'Probabilidad de ganar del grupo',
-      main: `${pctWin}%`, sub:`${stillAlive} de ${total} siguen completamente en juego`,
+      accent:'accent-blue', icon:'🎯', title:'Odds of winning (group)',
+      main: `${pctWin}%`, sub:`${stillAlive} of ${total} still fully in contention`,
       detail:`<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">
-        <span style="color:var(--ok)">■</span> ${stillAlive} en competencia &nbsp;
-        <span style="color:var(--warn)">■</span> ${aliveRisk} en riesgo &nbsp;
-        <span style="color:var(--ink-soft)">■</span> ${outCount} eliminados
+        <span style="color:var(--ok)">■</span> ${stillAlive} in contention &nbsp;
+        <span style="color:var(--warn)">■</span> ${aliveRisk} at risk &nbsp;
+        <span style="color:var(--ink-soft)">■</span> ${outCount} eliminated
       </div>`,
     },
     {
-      accent:'accent-orange', icon:'⚠️', title:'Riesgo del torneo',
-      main: `${riskPct}%`, sub:'de participantes en riesgo o eliminados',
+      accent:'accent-orange', icon:'⚠️', title:'Tournament risk',
+      main: `${riskPct}%`, sub:'of participants at risk or eliminated',
       detail:`<div class="risk-meter">
         <div class="risk-track"><div class="risk-needle" style="left:${riskNeedle}%"></div></div>
-        <div class="risk-labels"><span>Bajo</span><span>Moderado</span><span>Alto</span></div>
+        <div class="risk-labels"><span>Low</span><span>Medium</span><span>High</span></div>
       </div>`,
     },
     {
-      accent:'accent-purple', icon:'🔮', title:'Top picks vs picks únicos',
-      main: `${uniquePicks}`, sub:`selecciones apostadas por una sola persona`,
+      accent:'accent-purple', icon:'🔮', title:'Top picks vs unique picks',
+      main: `${uniquePicks}`, sub:`teams picked by only one person`,
       detail:`<div style="font-size:12px;color:var(--ink-mid);margin-top:6px">
-        <strong>${flag(topPick)} ${topPick}</strong> lidera con <strong>${topPickCnt} votos</strong> — el favorito indiscutible.<br/>
-        <span style="color:var(--ink-soft)">${uniquePicks} selecciones tienen apoyo de solo 1 participante.</span>
+        <strong>${flag(topPick)} ${topPick}</strong> lidera con <strong>${topPickCnt} votes</strong> — the undisputed favorite.<br/>
+        <span style="color:var(--ink-soft)">${uniquePicks} teams are backed by only 1 participant.</span>
       </div>`,
     },
     {
-      accent:'accent-red', icon:'💥', title:'Caídas de la fase',
-      main: `${outCount}`, sub:`participantes completamente eliminados`,
-      detail: outCount>0 ? outBars : '<span style="font-size:12px;color:var(--ink-soft)">¡Nadie eliminado aún!</span>',
+      accent:'accent-red', icon:'💥', title:'Phase knockouts',
+      main: `${outCount}`, sub:`participants completely eliminated`,
+      detail: outCount>0 ? outBars : '<span style="font-size:12px;color:var(--ink-soft)">Nobody eliminated yet!</span>',
     },
   ];
 
@@ -864,8 +868,8 @@ function renderBracket(){
   function matchHtml(m){
     if(!m) return `
       <div class="bracket-match">
-        <div class="bracket-team tbd"><span class="flag">—</span> Por definir</div>
-        <div class="bracket-team tbd"><span class="flag">—</span> Por definir</div>
+        <div class="bracket-team tbd"><span class="flag">—</span> TBD</div>
+        <div class="bracket-team tbd"><span class="flag">—</span> TBD</div>
       </div>`;
     const w1 = m.winner === m.team1;
     const w2 = m.winner === m.team2;
@@ -873,12 +877,12 @@ function renderBracket(){
       <div class="bracket-match">
         <div class="bracket-team ${w1?'winner':''} ${!m.team1?'tbd':''}">
           <span class="flag">${m.team1?flag(m.team1):'—'}</span>
-          ${m.team1||'Por definir'}
+          ${m.team1||'TBD'}
           ${m.score1!=null?`<span class="bracket-score">${m.score1}</span>`:''}
         </div>
         <div class="bracket-team ${w2?'winner':''} ${!m.team2?'tbd':''}">
           <span class="flag">${m.team2?flag(m.team2):'—'}</span>
-          ${m.team2||'Por definir'}
+          ${m.team2||'TBD'}
           ${m.score2!=null?`<span class="bracket-score">${m.score2}</span>`:''}
         </div>
       </div>`;
@@ -895,7 +899,7 @@ function renderBracket(){
   document.getElementById('bracket-grid').innerHTML = `
     <!-- Cuartos izq -->
     <div class="bracket-round">
-      <div class="round-label">Cuartos de final</div>
+      <div class="round-label">Quarterfinals</div>
       <div class="match-group">${qf1}</div>
       <div class="match-group">${qf2}</div>
     </div>
@@ -910,7 +914,7 @@ function renderBracket(){
 
     <!-- Semis izq -->
     <div class="bracket-round">
-      <div class="round-label">Semifinales</div>
+      <div class="round-label">Semifinals</div>
       <div class="match-group" style="margin-top:60px">${sf1}</div>
     </div>
 
@@ -937,7 +941,7 @@ function renderBracket(){
 
     <!-- Semis der -->
     <div class="bracket-round">
-      <div class="round-label">Semifinales</div>
+      <div class="round-label">Semifinals</div>
       <div class="match-group" style="margin-top:60px">${sf2}</div>
     </div>
 
@@ -951,7 +955,7 @@ function renderBracket(){
 
     <!-- Cuartos der -->
     <div class="bracket-round">
-      <div class="round-label">Cuartos de final</div>
+      <div class="round-label">Quarterfinals</div>
       <div class="match-group">${qf3}</div>
       <div class="match-group">${qf4}</div>
     </div>
