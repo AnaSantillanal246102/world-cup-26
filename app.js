@@ -8,21 +8,74 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* ─── FLAGS MAP ───────────────────────────────────────────── */
 const FLAGS = {
-  'Argentina':'\u{1F1E6}\u{1F1F7}','Brazil':'\u{1F1E7}\u{1F1F7}','Mexico':'\u{1F1F2}\u{1F1FD}','Spain':'\u{1F1EA}\u{1F1F8}',
-  'France':'\u{1F1EB}\u{1F1F7}','Germany':'\u{1F1E9}\u{1F1EA}','Portugal':'\u{1F1F5}\u{1F1F9}','England':'\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F',
-  'Morocco':'\u{1F1F2}\u{1F1E6}','Japan':'\u{1F1EF}\u{1F1F5}','Uruguay':'\u{1F1FA}\u{1F1FE}','Colombia':'\u{1F1E8}\u{1F1F4}',
-  'Netherlands':'\u{1F1F3}\u{1F1F1}','Croatia':'\u{1F1ED}\u{1F1F7}','Senegal':'\u{1F1F8}\u{1F1F3}','Ecuador':'\u{1F1EA}\u{1F1E8}',
-  'USA':'\u{1F1FA}\u{1F1F8}','United States':'\u{1F1FA}\u{1F1F8}','Canada':'\u{1F1E8}\u{1F1E6}','Australia':'\u{1F1E6}\u{1F1FA}','Switzerland':'\u{1F1E8}\u{1F1ED}',
-  'Belgium':'\u{1F1E7}\u{1F1EA}','Italy':'\u{1F1EE}\u{1F1F9}','Ghana':'\u{1F1EC}\u{1F1ED}','Serbia':'\u{1F1F7}\u{1F1F8}',
-  'Tunisia':'\u{1F1F9}\u{1F1F3}','Costa Rica':'\u{1F1E8}\u{1F1F7}','Cameroon':'\u{1F1E8}\u{1F1F2}','Wales':'\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73\uDB40\uDC7F',
-  'Saudi Arabia':'\u{1F1F8}\u{1F1E6}','Qatar':'\u{1F1F6}\u{1F1E6}','Poland':'\u{1F1F5}\u{1F1F1}','Denmark':'\u{1F1E9}\u{1F1F0}',
-  'South Korea':'\u{1F1F0}\u{1F1F7}','Korea':'\u{1F1F0}\u{1F1F7}','Iran':'\u{1F1EE}\u{1F1F7}','Nigeria':'\u{1F1F3}\u{1F1EC}',
-  'Chile':'\u{1F1E8}\u{1F1F1}','Peru':'\u{1F1F5}\u{1F1EA}','Paraguay':'\u{1F1F5}\u{1F1FE}','Bolivia':'\u{1F1E7}\u{1F1F4}',
-  'Honduras':'\u{1F1ED}\u{1F1F3}','Panama':'\u{1F1F5}\u{1F1E6}','Jamaica':'\u{1F1EF}\u{1F1F2}',
-  'New Zealand':'\u{1F1F3}\u{1F1FF}','South Africa':'\u{1F1FF}\u{1F1E6}','Algeria':'\u{1F1E9}\u{1F1FF}','Egypt':'\u{1F1EA}\u{1F1EC}',
-  'Greece':'\u{1F1EC}\u{1F1F7}','Turkey':'\u{1F1F9}\u{1F1F7}','Ukraine':'\u{1F1FA}\u{1F1E6}','Sweden':'\u{1F1F8}\u{1F1EA}',
-  'Norway':'\u{1F1F3}\u{1F1F4}','Scotland':'\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F','Austria':'\u{1F1E6}\u{1F1F9}','Czech Republic':'\u{1F1E8}\u{1F1FF}',
-};
+  argentina: "ar",
+  brazil: "br",
+  mexico: "mx",
+  spain: "es",
+  france: "fr",
+  germany: "de",
+  portugal: "pt",
+  england: "gb-eng",
+  morocco: "ma",
+  japan: "jp",
+  uruguay: "uy",
+  colombia: "co",
+  netherlands: "nl",
+  croatia: "hr",
+  senegal: "sn",
+  ecuador: "ec",
+  "united states": "us",
+  usa: "us",
+  canada: "ca",
+  australia: "au",
+  switzerland: "ch",
+  belgium: "be",
+  italy: "it",
+  ghana: "gh",
+  serbia: "rs",
+  tunisia: "tn",
+  "costa rica": "cr",
+  cameroon: "cm",
+  wales: "gb-wls",
+  "saudi arabia": "sa",
+  qatar: "qa",
+  poland: "pl",
+  denmark: "dk",
+  "south korea": "kr",
+  korea: "kr",
+  iran: "ir",
+  nigeria: "ng",
+  chile: "cl",
+  peru: "pe",
+  paraguay: "py",
+  bolivia: "bo",
+  honduras: "hn",
+  panama: "pa",
+  jamaica: "jm",
+  "new zealand": "nz",
+  "south africa": "za",
+  algeria: "dz",
+  egypt: "eg",
+  greece: "gr",
+  turkey: "tr",
+  ukraine: "ua",
+  sweden: "se",
+  norway: "no",
+  scotland: "gb-sct",
+  austria: "at",
+  "czech republic": "cz"
+}
+
+function getFlag(team) {
+  if (!team) return ""
+
+  const key = team.toLowerCase().trim()
+  const code = FLAGS[key]
+
+  if (!code) return "🏳️" // fallback
+
+  return `<span class="fi fi-${code}"></span>`
+}
 const flag = n => FLAGS[n] || '\u{1F3F3}';
 
 /* ─── COLOR UTILS ─────────────────────────────────────────── */
@@ -174,8 +227,8 @@ function renderLeaderboard(teamsMap){
       out:    '<span class="status-badge sb-out">Eliminated</span>',
     }[st];
 
-    const campPill = `<span class="pick-pill ${ce?'pill-dead':'pill-ok'}">${flag(r.champion)} ${r.champion}</span>`;
-    const subPill  = `<span class="pick-pill ${se?'pill-dead':ce?'pill-warn':'pill-ok'}">${flag(r.runnerup)} ${r.runnerup}</span>`;
+    const campPill = `<span class="pick-pill ${ce?'pill-dead':'pill-ok'}">${getFlag(r.champion)} ${r.champion}</span>`;
+    const subPill  = `<span class="pick-pill ${se?'pill-dead':ce?'pill-warn':'pill-ok'}">${getFlag(r.runnerup)} ${r.runnerup}</span>`;
 
     const ptsCls = rank-1===1 && !isOut ? 'pts-top' : '';
     const color  = avColor(r.name);
@@ -245,7 +298,7 @@ function renderTeams(teamsMap){
 
     return `<div class="team-card ${disabled?'disabled':''}">
       <div class="team-header">
-        <span class="flag">${flag(t.name)}</span>
+        <span class="flag">${getFlag(t.name)}</span>
         <div class="team-info">
           <div class="team-name">${t.name}</div>
           <div class="team-sub">${voters.length} vote${voters.length!==1?'s':''} for champion</div>
@@ -283,7 +336,7 @@ function renderInsights(teamsMap){
   const pctBars  = topByPct.map(([name,cnt])=>{
     const pct=Math.round(cnt/total*100);
     return `<div class="mini-bar-row">
-      <div class="mini-bar-label">${flag(name)} ${name}</div>
+      <div class="mini-bar-label">${getFlag(name)} ${name}</div>
       <div class="mini-bar-track"><div class="mini-bar-fill bar-gold" style="width:${Math.round(cnt/maxPct*100)}%"></div></div>
       <div class="mini-bar-count">${pct}%</div>
     </div>`;
@@ -293,7 +346,7 @@ function renderInsights(teamsMap){
   const top1 = topByPct[0];
   const topBars = topByPct.slice(0,4).map(([name,cnt])=>`
     <div class="mini-bar-row">
-      <div class="mini-bar-label">${flag(name)} ${name}</div>
+      <div class="mini-bar-label">${getFlag(name)} ${name}</div>
       <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round(cnt/maxPct*100)}%"></div></div>
       <div class="mini-bar-count">${cnt}</div>
     </div>`).join('');
@@ -354,7 +407,7 @@ function renderInsights(teamsMap){
       accent:'accent-purple', icon:'🔮', title:'Top picks vs unique picks',
       main: `${uniquePicks}`, sub:`teams picked by only one person`,
       detail:`<div style="font-size:12px;color:var(--ink-mid);margin-top:6px">
-        <strong>${flag(topPick)} ${topPick}</strong> lidera con <strong>${topPickCnt} votes</strong> — the undisputed favorite.<br/>
+        <strong>${getFlag(topPick)} ${topPick}</strong> lidera con <strong>${topPickCnt} votes</strong> — the undisputed favorite.<br/>
         <span style="color:var(--ink-soft)">${uniquePicks} teams are backed by only 1 participant.</span>
       </div>`,
     },
@@ -401,12 +454,12 @@ function renderBracket(){
     return `
       <div class="bracket-match">
         <div class="bracket-team ${w1?'winner':''} ${!m.team1?'tbd':''}">
-          <span class="flag">${m.team1?flag(m.team1):'—'}</span>
+          <span class="flag">${m.team1?getFlag(m.team1):'—'}</span>
           ${m.team1||'TBD'}
           ${m.score1!=null?`<span class="bracket-score">${m.score1}</span>`:''}
         </div>
         <div class="bracket-team ${w2?'winner':''} ${!m.team2?'tbd':''}">
-          <span class="flag">${m.team2?flag(m.team2):'—'}</span>
+          <span class="flag">${m.team2?getFlag(m.team2):'—'}</span>
           ${m.team2||'TBD'}
           ${m.score2!=null?`<span class="bracket-score">${m.score2}</span>`:''}
         </div>
