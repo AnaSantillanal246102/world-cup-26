@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>World Cup 2026 — Predictions Contest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+<link rel="stylesheet" href="style.css"/>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div>
+        <div class="hero-title">WORLD CUP <span>2026</span></div>
+        <div class="hero-title" style="font-size:clamp(14px,2.5vw,20px);font-weight:500;color:rgba(255,255,255,.8)">Predictions Contest</div>
+        <div class="hero-sub" id="hero-sub">Loading data…</div>
+      </div>
+      <span class="live-pill"><span class="live-dot"></span>Live</span>
+    </div>
+    
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-v" id="hs-total">—</div><div class="hstat-l">Participants</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-elim">—</div><div class="hstat-l">Eliminated</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-alive">—</div><div class="hstat-l">Still in</div></div>
+      <div class="hstat"><div class="hstat-v" id="hs-leader">—</div><div class="hstat-l">Current leader</div></div>
+    
+    </div>
+    <div class="hero-button">
+        <button class="live-pill" style="background:var(--white);color:var(--pitch);border-color:rgba(255,255,255,.3);font-weight:600;" onclick="window.location.href='https://tally.so/r/b5zG9g'">Make a Prediction</button>
+      </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<div class="main">
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="leaderboard">🏆 Leaderboard</button>
+    <button class="tab-btn" data-tab="teams">⚽ Teams</button>
+    <button class="tab-btn" data-tab="insights">📊 Insights</button>
+    <button class="tab-btn" data-tab="bracket">🗺 Bracket</button>
+  </div>
+
+  <!-- ── TAB: LEADERBOARD ── -->
+  <div class="tab-panel active" id="tab-leaderboard">
+    <div class="lb-wrap">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="text-align:center">#</th>
+            <th>Participant</th>
+            <th class="col-hide">Champion</th>
+            <th class="col-hide">Runner-up</th>
+            <th>Status</th>
+            <th>Pts</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body">
+          <tr><td colspan="6"><div class="loading-state"><div class="spinner"></div>Loading…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="pts-hint">Scoring: <strong>3 pts</strong> if your champion is correct · <strong>1 pt</strong> if your runner-up is correct · <strong>0 pts</strong> if the team was eliminated</p>
+  </div>
+
+  <!-- ── TAB: SELECCIONES ── -->
+  <div class="tab-panel" id="tab-teams">
+    <div class="loading-state" id="teams-loading"><div class="spinner"></div>Loading…</div>
+    <div id="teams-active-grid" class="teams-grid" style="display:none"></div>
+    <div id="teams-elim-section" style="display:none">
+      <div class="section-divider"><span>Eliminated teams</span></div>
+      <div id="teams-elim-grid" class="teams-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: INSIGHTS ── -->
+  <div class="tab-panel" id="tab-insights">
+    <div class="loading-state" id="insights-loading"><div class="spinner"></div>Calculating…</div>
+    <div id="insights-content" style="display:none">
+      <div class="insights-grid" id="insights-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: BRACKET ── -->
+  <div class="tab-panel" id="tab-bracket">
+    <div class="bracket-wrap">
+      <div class="bracket-title">⚽ Bracket — From Quarterfinals</div>
+      <div class="bracket-grid" id="bracket-grid">
+        <div class="loading-state"><div class="spinner"></div>Loading bracket…</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+</body>
+</html>
