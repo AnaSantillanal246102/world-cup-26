@@ -608,6 +608,10 @@ function renderAll(){
 /* ─── HERO ────────────────────────────────────────────────── */
 function renderHero(teamsMap){
   const lb = state.leaderboard;
+  const allTeams = state.teams.length > 0
+    ? state.teams
+    : Object.values(teamsMap);
+  const elim   = allTeams.filter(t=> t.is_eliminated);
   const total = lb.length;
   const activeCount = lb.filter(r=>participantStatus(r,teamsMap)==='active').length;
   const outCount    = lb.filter(r=>participantStatus(r,teamsMap)==='out').length;
@@ -618,7 +622,7 @@ function renderHero(teamsMap){
   document.getElementById('hs-alive').textContent  = activeCount;
   document.getElementById('hs-leader').textContent = leader ? `${leader.points}pts` : '—';
   document.getElementById('hero-sub').textContent  =
-    `${total} participants · ${state.teams.filter(t=>t.is_eliminated).length} eliminated teams`;
+    `${total} participants · ${elim.length} eliminated teams`;
 }
 
 /* ─── LEADERBOARD ─────────────────────────────────────────── */
